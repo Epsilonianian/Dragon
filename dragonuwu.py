@@ -29,37 +29,40 @@ done = False
 movingVertically=False
 clock = pygame.time.Clock() 
 
-scale = pygame.image.load("blue.png")
+scale = pygame.image.load("scale.png")
 pygame.display.update()
 
 class link():
     def __init__(self,size,x,y):
         self.x=x
         self.y=y
-        self.displayx=x
-        self.displayy=y
+        self.xvelo=0
+        self.yvelo=0
         self.size=round(size)
-        self.direction=225
-        self.shape=pygame.transform.scale(scale, (50,50))
+        self.mass=self.size**2
+        self.shape=pygame.transform.scale(scale, (self.size,self.size))
     def draw(self):
-        shape2=pygame.transform.rotate(self.shape,self.direction)
-        screen.blit(shape2,(self.displayx,self.displayy))
-        screen.blit
+        if self.xvelo==0:
+            shape2=pygame.transform.rotate(self.shape,-90+(180*(math.atan(-self.yvelo/(self.xvelo+0.0001))))/math.pi)
+        if self.xvelo>0:
+            shape2=pygame.transform.rotate(self.shape,-90+(180*(math.atan(-self.yvelo/(self.xvelo))))/math.pi)
+        if self.xvelo<0:
+            shape2=pygame.transform.rotate(self.shape,90+(180*(math.atan(-self.yvelo/(self.xvelo))))/math.pi)
+
+        screen.blit(shape2,(self.x,self.y))
 
 scales=[]
-
-for i in range (1,10):
-    alpha = link(200-1.65**i,1300-50*i,500-50*i)
-    print(100-1.5**i)
-    scales.append(alpha)
-
-potato=0
-maindirection=math.pi*0.25
+numcircles=5
+potato=1
 turning=0
-prevx=0
-prevy=0
 tracker=0
 done=False
+maindirection=0
+for i in range (0,numcircles):
+    alpha = link(200-1.65**i,1300-50*i,500-50*i)
+    scales.append(alpha)
+
+
 while not done:
     tracker+=1
     for event in pygame.event.get(): 
@@ -75,40 +78,50 @@ while not done:
                 turning+=0.02
             if event.key == pygame.K_d:
                 turning-=0.02
-    maindirection+=turning
 
     for i in scales:
-        if potato==0:
-            scaledirection=maindirection
-            i.direction=270-180*scaledirection/math.pi
-            i.x+=math.cos(scaledirection)*2
-            i.y+=math.sin(scaledirection)*2
-            i.displayx=i.x
-            i.displayy=i.y
-        else:
-            if i.x-prevx!=0:
-                scaledirection=math.pi/2+math.atan((i.y-prevy)/(i.x-prevx))
+        if potato==1:
+            maindirection+=turning
+            i.xvelo=5*math.cos(maindirection)
+            i.yvelo=5*math.sin(maindirection)
+        elif potato==numcircles:
+            prevdude=scales[potato-2]
+            prevdistance=math.sqrt((i.x-prevdude.x)**2+(i.y-prevdude.y)**2)
+            if prevdude.x==i.x:
+                i.x+=0.001
+            if prevdude.x-i.x>0:
+                prevang=math.atan((i.y-prevdude.y)/(prevdude.x-i.x))
             else:
-                scaledirection=math.pi/2+math.atan((i.y-prevy)/(0.00001+i.x-prevx))
-            if i.x-prevx>0:
-                scaledirection+=math.pi
-            scaledirection*=-1
-            i.x=prevx-math.sin(scaledirection)*2
-            i.y=prevy-math.cos(scaledirection)*2
-            i.displayx=prevx-math.sin(scaledirection)*50*potato
-            i.displayy=prevy-math.cos(scaledirection)*50*potato
-            i.direction=-180*(math.pi/2+math.atan((i.displayy-prevy)/(i.displayx-prevx)))/math.pi
+                prevang=math.pi+math.atan((i.y-prevdude.y)/(prevdude.x-i.x))
+            i.xvelo+=100*(math.cos(prevang)*(prevdistance-i.size-prevdude.size))/i.mass
+            i.yvelo+=100*(math.sin(prevang)*(prevdistance-i.size-prevdude.size))/i.mass
+            print((math.cos(prevang)*(prevdistance-i.size-prevdude.size))/i.mass)
+        else:
+            prevdude=scales[potato-2]
+            print(potato-2)
+            nextdude=scales[potato]
+            prevdistance=math.sqrt((i.x-prevdude.x)**2+(i.y-prevdude.y)**2)
+            nextdistance=math.sqrt((i.x-nextdude.x)**2+(i.y-nextdude.y)**2)
+            if prevdude.x==i.x:
+                i.x+=0.001
+            if prevdude.x-i.x>0:
+                prevang=math.atan((i.y-prevdude.y)/(prevdude.x-i.x))
+            else:
+                prevang=math.pi+math.atan((i.y-prevdude.y)/(prevdude.x-i.x))
+            if nextdude.x==i.x:
+                i.x+=0.001
+            if nextdude.x-i.x>0:
+                nextang=math.atan((i.y-nextdude.y)/(nextdude.x-i.x))
+            else:
+                nextang=math.pi+math.atan((i.y-nextdude.y)/(nextdude.x-i.x))
+            i.xvelo+=100*(math.cos(prevang)*(prevdistance-i.size-prevdude.size)+math.cos(nextang)*(nextdistance-i.size-nextdude.size))/i.mass
+            i.yvelo+=100*(math.sin(prevang)*(prevdistance-i.size-prevdude.size)+math.sin(nextang)*(nextdistance-i.size-nextdude.size))/i.mass
         potato+=1
-
-
-
-
+        i.x+=i.xvelo
+        i.y+=i.yvelo
         i.draw()
-        prevx=i.x
-        prevy=i.y
-    potato=0
+    potato=1
     pygame.display.update()
-    clock.tick(50)
-    if tracker%10==0:
-        screen.fill(BLACK)
+    clock.tick(1)
+    screen.fill(BLACK)
 print(len(scales))
