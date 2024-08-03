@@ -39,15 +39,16 @@ class link():
         self.y=y
         self.xvelo=1
         self.yvelo=0
-        self.size=round(size)
+        print(size)
+        self.size=round(size*4)
         self.mass=self.size**2
-        self.shape=pygame.image.load("scale.png")
+        self.shape=pygame.image.load("dotty.png")
 #        self.shape=pygame.image.load(f"{shter}.png")
-        self.shape=pygame.transform.scale(self.shape, (4*self.size,4*self.size))
+        self.shape=pygame.transform.scale(self.shape, (self.size,self.size))
     def draw(self,pointer):
         shape2=pygame.transform.rotate(self.shape,pointer)
-        screen.blit(shape2,(self.x,self.y))
-        pygame.draw.rect(screen,RED,pygame.Rect(self.x,self.y,4*self.size,4*self.size),2)
+        screen.blit(shape2,(900,500))
+        pygame.draw.rect(screen,RED,pygame.Rect(900,500,200,200),2)
 
 
 scales=[]
@@ -74,6 +75,8 @@ while not done:
                 turning-=0.02
             if event.key == pygame.K_d:
                 turning+=0.02
+            if event.key == pygame.K_c:
+                screen.fill(BLACK)
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 turning+=0.02
@@ -129,5 +132,4 @@ while not done:
     potato=1
     pygame.display.update()
     clock.tick(100)
-    screen.fill(BLACK)
 print(len(scales))
