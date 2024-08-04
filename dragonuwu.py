@@ -4,6 +4,8 @@ import time
 import math
 import pygame.display
 import pygame.transform
+import random
+
 pygame.init() 
 os.chdir(os.path.dirname(__file__))
 
@@ -31,7 +33,6 @@ movingVertically=False
 clock = pygame.time.Clock() 
 pygame.display.update()
 
-wingsize=1000
 class link():
 #    def __init__(self,size,x,y,shter):
     def __init__(self,size,x,y):
@@ -53,38 +54,69 @@ class link():
         pointer=pointer%90
         pointer=pointer*math.pi/180
         screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
+    def spitfire(self):
+        for e in range(1,20):
+            gamma=flame(random.randint(-30,30),random.randint(1,45),random.randint(1,5))
+            flames.append(gamma)
+
+
+
+        
+
+class flame():
+    def __init__(self,angle,distance,strength):
+        self.angle=angle
+        self.distance=distance
+        self.strength=strength
+        self.colour=(255,strength*(50-distance),0)
+    def draw(self,x,y,diction,num):
+        direction=diction+90
+        pygame.draw.rect(screen,self.colour,(x+100*math.cos(math.pi*direction/180)+self.distance*math.cos(math.pi*(direction+self.angle)/180),y-100*math.sin(math.pi*direction/180)-self.distance*math.sin(math.pi*(direction+self.angle)/180),5,5))
+        self.strength-=1
+        if self.strength==0:
+            flames.pop(num)
+        else:
+            self.colour=(255,self.strength*(50-self.distance),0)
+
             
 class wings():
-    def __init__(self):
+    def __init__(self,wingsize):
         self.wings=pygame.image.load("wings.png")
-        self.wings=pygame.transform.scale(self.wings,(wingsize,wingsize))
+        self.wingsize=wingsize
+        self.wings=pygame.transform.scale(self.wings,(self.wingsize,self.wingsize))
     def draw(self,pointer,x,y):
         wings=pygame.transform.rotate(self.wings,pointer)
         pointer=pointer%90
         pointer=pointer*math.pi/180
-        screen.blit(wings,(x-(wingsize*math.cos((math.pi/4-pointer)))/math.sqrt(2),y-wingsize*math.sin(pointer)-wingsize*(math.sin(math.pi/4-pointer)/math.sqrt(2)))) 
+        screen.blit(wings,(x-(self.wingsize*math.cos((math.pi/4-pointer)))/math.sqrt(2),y-self.wingsize*math.sin(pointer)-self.wingsize*(math.sin(math.pi/4-pointer)/math.sqrt(2)))) 
 
 clock=pygame.time.Clock()
-zoom=wings()
+zoom=wings(1000)
+zoomy=wings(500)
 scales=[]
 middles=[]
+flames=[]
 factor=0.01
 numcircles=10
 zoomer=round(numcircles/3)
+zoomyer=round(numcircles/2)
 potato=1
 turning=0
 tracker=0
 done=False
+torchem=False
 maindirection=0
 flying=0
+counta=0
+
 for i in range (0,numcircles):
-    alpha = link(200-1.69**(i+1),1000-100*i,500)
+    alpha = link(200-16*i,1000-100*i,500)
     scales.append(alpha)
 
 while tracker<numcircles/3:
     first=scales[tracker]
     second=scales[tracker+1]
-    beta = link((first.size+second.size)/2,500,500,0)
+    beta = link((first.size+second.size)/2,500,500)
     middles.append(beta)
     tracker+=1
 tracker=0
@@ -98,11 +130,16 @@ while not done:
                 turning-=0.08
             if event.key == pygame.K_d:
                 turning+=0.08
+            if event.key == pygame.K_f:
+                torchem=True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 turning+=0.08
             if event.key == pygame.K_d:
                 turning-=0.08
+            if event.key == pygame.K_f:
+                torchem=False
+                flames.clear()
 
     for i in scales:
         if potato==1:
@@ -110,6 +147,12 @@ while not done:
             i.xvelo=20*math.cos(maindirection)
             i.yvelo=20*math.sin(maindirection)
             i.draw(-90-maindirection*180/math.pi)
+            if torchem==True:
+                i.spitfire()
+                counta=0
+                for f in flames:
+                    f.draw(i.x,i.y,i.direction,counta)
+                    counta+=1
         elif potato==numcircles:
             prevdude=scales[potato-2]
             prevdistance=math.sqrt((i.x-prevdude.x)**2+(i.y-prevdude.y)**2)
@@ -152,6 +195,8 @@ while not done:
         i.y+=i.yvelo
         if potato==zoomer:
             zoom.draw(i.direction,i.x,i.y)
+        if potato==zoomyer:
+            zoomy.draw(i.direction,i.x,i.y)
 
     for j in middles:
         first=scales[tracker]
