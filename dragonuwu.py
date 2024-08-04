@@ -55,8 +55,11 @@ class link():
         pointer=pointer*math.pi/180
         screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
     def spitfire(self):
-        for e in range(1,20):
-            gamma=flame(random.randint(-30,30),random.randint(1,45),random.randint(1,5))
+        for e in range(1,50):
+            leftright=random.randint(0,1)
+            leftright-=0.5
+            leftright*=2
+            gamma=flame(leftright*(400/(0.3*random.randint(0,45)+6.6)-20),random.randint(1,135),random.randint(1,8))
             flames.append(gamma)
 
 
@@ -68,7 +71,7 @@ class flame():
         self.angle=angle
         self.distance=distance
         self.strength=strength
-        self.colour=(255,strength*(50-distance),0)
+        self.colour=(255,strength*0.1875*(150-distance),0)
     def draw(self,x,y,diction,num):
         direction=diction+90
         pygame.draw.rect(screen,self.colour,(x+100*math.cos(math.pi*direction/180)+self.distance*math.cos(math.pi*(direction+self.angle)/180),y-100*math.sin(math.pi*direction/180)-self.distance*math.sin(math.pi*(direction+self.angle)/180),5,5))
@@ -76,7 +79,7 @@ class flame():
         if self.strength==0:
             flames.pop(num)
         else:
-            self.colour=(255,self.strength*(50-self.distance),0)
+            self.colour=(255,self.strength*0.1875*(150-self.distance),0)
 
             
 class wings():
@@ -213,7 +216,7 @@ while not done:
     pygame.display.update()
     clock.tick()
     print(clock.get_fps())
-    screen.fill(WHITE)
+    screen.fill(BLACK)
 print(len(scales))
 print(len(middles))
 
