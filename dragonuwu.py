@@ -44,8 +44,10 @@ class link():
         self.shape=pygame.image.load("scale.png")
 #        self.shape=pygame.image.load(f"{shter}.png")
         self.shape=pygame.transform.scale(self.shape, (self.size,self.size))
+        self.direction=0
     def draw(self,pointer):
         shape2=pygame.transform.rotate(self.shape,pointer)
+        self.direction=(pointer)%360
         pointer=pointer%90
         pointer=pointer*math.pi/180
         screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
@@ -53,40 +55,48 @@ class link():
 
 
 scales=[]
-factor=0.1
-numcircles=8
+middles=[]
+factor=0.01
+numcircles=10
 potato=1
 turning=0
 tracker=0
 done=False
 maindirection=0
 for i in range (0,numcircles):
-    alpha = link(200-1.9*i,500,500)
+    alpha = link(200-1.69**(i+1),500,500)
+    print(200-1.69**(i+1))
 #    alpha = link(50-2*i,500,500,i+1)
     scales.append(alpha)
 
+while tracker<numcircles/3:
+    first=scales[tracker]
+    second=scales[tracker+1]
+    beta = link((first.size+second.size)/2,500,500)
+    middles.append(beta)
+    tracker+=1
+tracker=0
 
 while not done:
-    tracker+=1
     for event in pygame.event.get(): 
         if event.type == pygame.QUIT: 
             done = True
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
-                turning-=0.02
+                turning-=0.04
             if event.key == pygame.K_d:
-                turning+=0.02
+                turning+=0.04
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
-                turning+=0.02
+                turning+=0.04
             if event.key == pygame.K_d:
-                turning-=0.02
+                turning-=0.04
 
     for i in scales:
         if potato==1:
             maindirection+=turning
-            i.xvelo=5*math.cos(maindirection)
-            i.yvelo=5*math.sin(maindirection)
+            i.xvelo=10*math.cos(maindirection)
+            i.yvelo=10*math.sin(maindirection)
             i.draw(-90-maindirection*180/math.pi)
         elif potato==numcircles:
             prevdude=scales[potato-2]
@@ -97,8 +107,8 @@ while not done:
                 prevang=math.atan((i.y-prevdude.y)/(prevdude.x-i.x))
             else:
                 prevang=math.pi+math.atan((i.y-prevdude.y)/(prevdude.x-i.x))
-            i.xvelo+=0.1*(math.cos(prevang)*(prevdistance-((i.size+prevdude.size)*factor)))
-            i.yvelo+=-0.1*(math.sin(prevang)*(prevdistance-((i.size+prevdude.size)*factor)))
+            i.xvelo+=0.2*(math.cos(prevang)*(prevdistance-((i.size+prevdude.size)*factor)))
+            i.yvelo+=-0.2*(math.sin(prevang)*(prevdistance-((i.size+prevdude.size)*factor)))
         else:
             prevdude=scales[potato-2]
             nextdude=scales[potato]
@@ -128,8 +138,24 @@ while not done:
         potato+=1
         i.x+=i.xvelo
         i.y+=i.yvelo
+    for j in middles:
+        first=scales[tracker]
+        second=scales[tracker+1]
+        j.x=(first.x+second.x)/2
+        j.y=(first.y+second.y)/2
+        j.direction=(first.direction+second.direction)/2
+        j.draw(j.direction)
+        tracker+=1
+        if tracker==1:
+            print(f"first{first.direction}")
+            print(f"second{second.direction}")
+            print(j.direction)
+
     potato=1
+    tracker=0
     pygame.display.update()
     clock.tick(100)
     screen.fill(BLACK)
 print(len(scales))
+print(len(middles))
+
