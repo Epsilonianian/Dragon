@@ -3,6 +3,7 @@ import os
 import time
 import math
 import pygame.display
+import pygame.transform
 pygame.init() 
 os.chdir(os.path.dirname(__file__))
 
@@ -28,21 +29,19 @@ centering=0
 done = False               
 movingVertically=False
 clock = pygame.time.Clock() 
-
-scale = pygame.image.load("scale.png")
 pygame.display.update()
 
+wingsize=1000
 class link():
 #    def __init__(self,size,x,y,shter):
-    def __init__(self,size,x,y):
+    def __init__(self,size,x,y,winging):
         self.x=x
         self.y=y
         self.xvelo=1
         self.yvelo=0
         self.size=round(size)
         self.mass=self.size**2
-        self.shape=pygame.image.load("scale.png")
-#        self.shape=pygame.image.load(f"{shter}.png")
+        self.shape=pygame.image.load("scale2.png")
         self.shape=pygame.transform.scale(self.shape, (self.size,self.size))
         self.direction=0
     def draw(self,pointer):
@@ -54,28 +53,41 @@ class link():
         pointer=pointer%90
         pointer=pointer*math.pi/180
         screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
-#        pygame.draw.rect(screen,RED,pygame.Rect(900,500,self.size,self.size),2)
+            
+class wings():
+    def __init__(self):
+        self.wings=pygame.image.load("wings.png")
+        self.wings=pygame.transform.scale(self.wings,(wingsize,wingsize))
+    def draw(self,pointer,x,y):
+        wings=pygame.transform.rotate(self.wings,pointer)
+        pointer=pointer%90
+        pointer=pointer*math.pi/180
+        screen.blit(wings,(x-(wingsize*math.cos((math.pi/4-pointer)))/math.sqrt(2),y-wingsize*math.sin(pointer)-wingsize*(math.sin(math.pi/4-pointer)/math.sqrt(2)))) 
 
-
+clock=pygame.time.Clock()
+zoom=wings()
 scales=[]
 middles=[]
 factor=0.01
 numcircles=10
+zoomer=round(numcircles/3)
 potato=1
 turning=0
 tracker=0
 done=False
+frozen=False
 maindirection=0
+flying=0
 for i in range (0,numcircles):
-    alpha = link(200-1.69**(i+1),500,500)
-    print(200-1.69**(i+1))
-#    alpha = link(50-2*i,500,500,i+1)
+    if i/numcircles>0.1:
+        flying+=1
+    alpha = link(200-1.69**(i+1),1000-100*i,500,flying)
     scales.append(alpha)
 
 while tracker<numcircles/3:
     first=scales[tracker]
     second=scales[tracker+1]
-    beta = link((first.size+second.size)/2,500,500)
+    beta = link((first.size+second.size)/2,500,500,0)
     middles.append(beta)
     tracker+=1
 tracker=0
@@ -86,20 +98,20 @@ while not done:
             done = True
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
-                turning-=0.04
+                turning-=0.08
             if event.key == pygame.K_d:
-                turning+=0.04
+                turning+=0.08
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
-                turning+=0.04
+                turning+=0.08
             if event.key == pygame.K_d:
-                turning-=0.04
+                turning-=0.08
 
     for i in scales:
         if potato==1:
             maindirection+=turning
-            i.xvelo=10*math.cos(maindirection)
-            i.yvelo=10*math.sin(maindirection)
+            i.xvelo=20*math.cos(maindirection)
+            i.yvelo=20*math.sin(maindirection)
             i.draw(-90-maindirection*180/math.pi)
         elif potato==numcircles:
             prevdude=scales[potato-2]
@@ -129,8 +141,8 @@ while not done:
                 nextang=math.atan((i.y-nextdude.y)/(nextdude.x-i.x))
             else:
                 nextang=math.pi+math.atan((i.y-nextdude.y)/(nextdude.x-i.x))
-            i.xvelo=0.2*(math.cos(prevang)*(prevdistance-((i.size+prevdude.size)*factor))+math.cos(nextang)*(nextdistance-((i.size+prevdude.size)*factor)))
-            i.yvelo=-0.2*(math.sin(prevang)*(prevdistance-((i.size+prevdude.size)*factor))+math.sin(nextang)*(nextdistance-((i.size+prevdude.size)*factor)))
+            i.xvelo=0.4*(math.cos(prevang)*(prevdistance-((i.size+prevdude.size)*factor))+math.cos(nextang)*(nextdistance-((i.size+prevdude.size)*factor)))
+            i.yvelo=-0.4*(math.sin(prevang)*(prevdistance-((i.size+prevdude.size)*factor))+math.sin(nextang)*(nextdistance-((i.size+prevdude.size)*factor)))
             if i.x-prevdude.x==0:
                 direction=90+(180*(math.atan((i.y-prevdude.y)/(prevdude.x-i.x+0.0001))))/math.pi
             if i.x-prevdude.x>0:
@@ -141,6 +153,9 @@ while not done:
         potato+=1
         i.x+=i.xvelo
         i.y+=i.yvelo
+        if potato==zoomer:
+            zoom.draw(i.direction,i.x,i.y)
+
     for j in middles:
         first=scales[tracker]
         second=scales[tracker+1]
@@ -151,16 +166,12 @@ while not done:
             j.direction+=180
         j.draw(j.direction)
         tracker+=1
-        if tracker==1:
-            print(f"first{first.direction}")
-            print(f"second{second.direction}")
-            print(j.direction)
-
     potato=1
     tracker=0
     pygame.display.update()
-    clock.tick(100)
-    screen.fill(BLACK)
+    clock.tick()
+    print(clock.get_fps())
+    screen.fill(WHITE)
 print(len(scales))
 print(len(middles))
 
