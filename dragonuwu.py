@@ -47,7 +47,10 @@ class link():
         self.direction=0
     def draw(self,pointer):
         shape2=pygame.transform.rotate(self.shape,pointer)
-        self.direction=(pointer)%360
+        self.direction=pointer
+        while self.direction<0:
+            self.direction+=360
+        self.direction=self.direction%360            
         pointer=pointer%90
         pointer=pointer*math.pi/180
         screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
@@ -144,6 +147,8 @@ while not done:
         j.x=(first.x+second.x)/2
         j.y=(first.y+second.y)/2
         j.direction=(first.direction+second.direction)/2
+        if (first.direction-second.direction)**2>32400:
+            j.direction+=180
         j.draw(j.direction)
         tracker+=1
         if tracker==1:
