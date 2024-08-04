@@ -43,23 +43,25 @@ class link():
         self.mass=self.size**2
         self.shape=pygame.image.load("scale.png")
 #        self.shape=pygame.image.load(f"{shter}.png")
-        self.shape=pygame.transform.scale(self.shape, (4*self.size,4*self.size))
+        self.shape=pygame.transform.scale(self.shape, (self.size,self.size))
     def draw(self,pointer):
         shape2=pygame.transform.rotate(self.shape,pointer)
-        screen.blit(shape2,(self.x,self.y))
-        pygame.draw.rect(screen,RED,pygame.Rect(self.x,self.y,4*self.size,4*self.size),2)
+        pointer=pointer%90
+        pointer=pointer*math.pi/180
+        screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
+#        pygame.draw.rect(screen,RED,pygame.Rect(900,500,self.size,self.size),2)
 
 
 scales=[]
 factor=0.1
-numcircles=1
+numcircles=8
 potato=1
 turning=0
 tracker=0
 done=False
 maindirection=0
 for i in range (0,numcircles):
-    alpha = link(50-2*i,500,500)
+    alpha = link(200-1.9*i,500,500)
 #    alpha = link(50-2*i,500,500,i+1)
     scales.append(alpha)
 
