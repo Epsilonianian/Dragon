@@ -34,7 +34,7 @@ pygame.display.update()
 wingsize=1000
 class link():
 #    def __init__(self,size,x,y,shter):
-    def __init__(self,size,x,y,winging):
+    def __init__(self,size,x,y):
         self.x=x
         self.y=y
         self.xvelo=1
@@ -75,13 +75,10 @@ potato=1
 turning=0
 tracker=0
 done=False
-frozen=False
 maindirection=0
 flying=0
 for i in range (0,numcircles):
-    if i/numcircles>0.1:
-        flying+=1
-    alpha = link(200-1.69**(i+1),1000-100*i,500,flying)
+    alpha = link(200-1.69**(i+1),1000-100*i,500)
     scales.append(alpha)
 
 while tracker<numcircles/3:
