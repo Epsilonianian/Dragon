@@ -35,7 +35,7 @@ pygame.display.update()
 
 class link():
 #    def __init__(self,size,x,y,shter):
-    def __init__(self,size,x,y):
+    def __init__(self,size,x,y,head):
         self.x=x
         self.y=y
         self.xvelo=1
@@ -43,6 +43,8 @@ class link():
         self.size=round(size)
         self.mass=self.size**2
         self.shape=pygame.image.load("scale2.png")
+        if head==True:
+            self.shape=pygame.image.load("head.png")
         self.shape=pygame.transform.scale(self.shape, (self.size,self.size))
         self.direction=0
     def draw(self,pointer):
@@ -55,11 +57,11 @@ class link():
         pointer=pointer*math.pi/180
         screen.blit(shape2,(self.x-(self.size*math.cos((math.pi/4-pointer)))/math.sqrt(2),self.y-self.size*math.sin(pointer)-self.size*(math.sin(math.pi/4-pointer)/math.sqrt(2))))
     def spitfire(self):
-        for e in range(1,50):
+        for e in range(1,100):
             leftright=random.randint(0,1)
             leftright-=0.5
             leftright*=2
-            gamma=flame(leftright*(400/(0.3*random.randint(0,45)+6.6)-20),random.randint(1,135),random.randint(1,8))
+            gamma=flame(leftright*(400/(0.3*random.randint(0,45)+6.6)-20),random.randint(1,300),random.randint(1,8))
             flames.append(gamma)
 
 
@@ -71,7 +73,7 @@ class flame():
         self.angle=angle
         self.distance=distance
         self.strength=strength
-        self.colour=(255,strength*0.1875*(150-distance),0)
+        self.colour=(255,strength*0.09*(330-distance),0)
     def draw(self,x,y,diction,num):
         direction=diction+90
         pygame.draw.rect(screen,self.colour,(x+100*math.cos(math.pi*direction/180)+self.distance*math.cos(math.pi*(direction+self.angle)/180),y-100*math.sin(math.pi*direction/180)-self.distance*math.sin(math.pi*(direction+self.angle)/180),5,5))
@@ -79,7 +81,7 @@ class flame():
         if self.strength==0:
             flames.pop(num)
         else:
-            self.colour=(255,self.strength*0.1875*(150-self.distance),0)
+            self.colour=(255,self.strength*0.09*(330-self.distance),0)
 
             
 class wings():
@@ -111,15 +113,17 @@ torchem=False
 maindirection=0
 flying=0
 counta=0
+head=True
 
 for i in range (0,numcircles):
-    alpha = link(200-16*i,1000-100*i,500)
+    alpha = link(200-16*i,1000-100*i,500,head)
     scales.append(alpha)
+    head=False
 
 while tracker<numcircles/3:
     first=scales[tracker]
     second=scales[tracker+1]
-    beta = link((first.size+second.size)/2,500,500)
+    beta = link((first.size+second.size)/2,500,500,head)
     middles.append(beta)
     tracker+=1
 tracker=0
